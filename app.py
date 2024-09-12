@@ -1,15 +1,15 @@
-
 from flask import Flask, request, send_file
 import cairosvg
 from io import BytesIO
-import os
 
 app = Flask(__name__)
 
+# Health check route to verify the app is running
+@app.route('/', methods=['GET'])
+def home():
+    return "SVG to PNG Converter is running!", 200
 
-port = int(os.environ.get("PORT", 5000))
-app.run(debug=True, host='0.0.0.0', port=port)
-
+# Route for converting SVG to PNG
 @app.route('/convert', methods=['POST'])
 def convert_svg_to_png():
     try:
@@ -19,7 +19,7 @@ def convert_svg_to_png():
         if not svg_code:
             return "SVG code not provided", 400
 
-        # Convert SVG to PNG
+        # Convert SVG to PNG using cairosvg
         output = BytesIO()
         cairosvg.svg2png(bytestring=svg_code.encode('utf-8'), write_to=output)
 
@@ -31,4 +31,5 @@ def convert_svg_to_png():
         return str(e), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Run the app on 0.0.0.0 to make it publicly accessible
+    app.run(debug=True, host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
