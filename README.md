@@ -50,8 +50,9 @@ GET /convert
 **Example GET Request:**
 
 ```plaintext
-https://svgtopng.onrender.com/convert?svg=%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2240%22%20stroke%3D%22black%22%20stroke-width%3D%223%22%20fill%3D%22red%22%2F%3E
+https://svgtopng.onrender.com/convert?svg=%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%20%3Ccircle%20cx=%2250%22%20cy=%2250%22%20r=%2240%22%20stroke=%22black%22%20stroke-width=%223%22%20fill=%22red%22/%3E%20%3C/svg%3E
 ```
+[Click here](https://svgtopng.onrender.com/convert?svg=%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%20%3Ccircle%20cx=%2250%22%20cy=%2250%22%20r=%2240%22%20stroke=%22black%22%20stroke-width=%223%22%20fill=%22red%22/%3E%20%3C/svg%3E)
 
 The API will respond with a downloadable PNG file.
 
