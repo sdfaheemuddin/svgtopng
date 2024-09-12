@@ -1,6 +1,7 @@
 from flask import Flask, request, send_file
 import cairosvg
 from io import BytesIO
+import os  # Import the os module
 
 app = Flask(__name__)
 
