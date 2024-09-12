@@ -11,11 +11,14 @@ def home():
     return "SVG to PNG Converter is running!", 200
 
 # Route for converting SVG to PNG
-@app.route('/convert', methods=['POST'])
+@app.route('/convert', methods=['GET', 'POST'])
 def convert_svg_to_png():
     try:
-        # Extract SVG code from the request
-        svg_code = request.form.get('svg')
+        # Extract SVG code from request args (GET) or form data (POST)
+        if request.method == 'GET':
+            svg_code = request.args.get('svg')
+        elif request.method == 'POST':
+            svg_code = request.form.get('svg')
         
         if not svg_code:
             return "SVG code not provided", 400
