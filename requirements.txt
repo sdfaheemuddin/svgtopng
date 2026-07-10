@@ -1,3 +1,6 @@
-
 flask
 cairosvg
+rembg[cpu]
+pillow
+python-multipart
+gunicorn

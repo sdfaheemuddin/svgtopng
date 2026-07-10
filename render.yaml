@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: svgtopng
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --timeout 180 --workers 1
+    envVars:
+      - key: REMBG_MODEL
+        value: u2net_human_seg
+      - key: MAX_IMAGE_BYTES
+        value: 5242880

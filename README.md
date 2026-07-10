@@ -1,80 +1,147 @@
 # SVG to PNG Converter API - User Guide
 
-This API allows you to convert SVG (Scalable Vector Graphics) files into PNG (Portable Network Graphics) format. You can interact with the API via HTTP requests and receive the converted PNG image in return.
+This API allows you to convert SVG files into PNG images and process uploaded photos by removing the background and placing the result on a white background.
 
 ## Features
 
 - Convert SVG to PNG format.
-- Supports both `POST` and `GET` methods.
-- Returns the converted PNG image as a downloadable file.
+- Supports SVG conversion using both `POST` and `GET` methods.
+- Remove image background and return a white-background JPG.
+- Designed for use from other apps such as the SIR Family Form Tool.
 
 ## API Endpoints
 
 **Base url:**
-```
+
+```text
 https://svgtopng.onrender.com
 ```
 
-### 1. Convert SVG to PNG (POST)
+---
+
+## 1. Convert SVG to PNG - POST
 
 **Endpoint:**
 
-```
+```text
 POST /convert
 ```
 
 **Request:**
 
-- **Content-Type**: `application/x-www-form-urlencoded`
+- **Content-Type**: `application/x-www-form-urlencoded` or `multipart/form-data`
 - **Body Parameter**:
-  - `svg`: Your SVG code (string).
+  - `svg`: SVG code as a string
 
 **Example cURL Request:**
 
 ```bash
-curl -X POST -F 'svg=<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" stroke="black" stroke-width="3" fill="red"/></svg>' https://svgtopng.onrender.com/convert --output image.png
+curl -X POST \
+  -F 'svg=<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" stroke="black" stroke-width="3" fill="red"/></svg>' \
+  https://svgtopng.onrender.com/convert \
+  --output image.png
 ```
 
-### 2. Convert SVG to PNG (GET)
+---
+
+## 2. Convert SVG to PNG - GET
 
 **Endpoint:**
 
-```
+```text
 GET /convert
 ```
 
 **Request:**
 
-- **URL Parameter**: `svg` (URL-encoded SVG string).
+- **URL Parameter**: `svg`, URL-encoded SVG string
 
 **Example GET Request:**
 
-```plaintext
+```text
 https://svgtopng.onrender.com/convert?svg=%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%20%3Ccircle%20cx=%2250%22%20cy=%2250%22%20r=%2240%22%20stroke=%22black%22%20stroke-width=%223%22%20fill=%22red%22/%3E%20%3C/svg%3E
 ```
+
 [Click here](https://svgtopng.onrender.com/convert?svg=%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%20%3Ccircle%20cx=%2250%22%20cy=%2250%22%20r=%2240%22%20stroke=%22black%22%20stroke-width=%223%22%20fill=%22red%22/%3E%20%3C/svg%3E)
 
 The API will respond with a downloadable PNG file.
 
-## Example SVG Code:
+---
 
-You can use the following sample SVG code to test the API:
+## 3. Remove Background and Add White Background
 
-```xml
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-    <circle cx="50" cy="50" r="40" stroke="black" stroke-width="3" fill="red"/>
-</svg>
+**Endpoint:**
+
+```text
+POST /remove-bg-white
 ```
 
-## API Testing via Postman
+**Request:**
 
-To quickly test the API, you can use the Postman collection provided below. Click the button to import the collection into Postman:
+- **Content-Type**: `multipart/form-data`
+- **Body Parameter**:
+  - `file`: JPG, PNG, or WebP image
 
-[![App Platorm](https://run.pstmn.io/button.svg)](https://god.gw.postman.com/run-collection/17577897-86f551f8-c830-43bc-8daf-5466a0a1d6dd?action=collection%2Ffork&source=rip_markdown&collection-url=entityId%3D17577897-86f551f8-c830-43bc-8daf-5466a0a1d6dd%26entityType%3Dcollection%26workspaceId%3De763b87e-66a9-4e15-bad3-22c2ae2e55eb)
+**Example cURL Request:**
+
+```bash
+curl -X POST \
+  -F "file=@photo.jpg" \
+  https://svgtopng.onrender.com/remove-bg-white \
+  --output photo_white_bg.jpg
+```
+
+**Response:**
+
+```text
+image/jpeg
+```
+
+The API removes the background using `rembg`, composites the result onto a white background, and returns a JPG file.
 
 ---
 
-### Error Handling
+## Health Check
 
-- **400 Bad Request**: Occurs if the `svg` parameter is missing or invalid.
-- **500 Internal Server Error**: Occurs if there’s an internal issue during the conversion process.
+```text
+GET /health
+```
+
+Expected response:
+
+```json
+{"status":"ok"}
+```
+
+---
+
+## Deployment Notes
+
+For Render, this repo includes `render.yaml`.
+
+Recommended start command:
+
+```bash
+gunicorn app:app --timeout 180 --workers 1
+```
+
+The first background-removal request may be slow because the `rembg` model needs to load/download.
+
+Environment variables:
+
+| Variable | Default | Purpose |
+|---|---:|---|
+| `REMBG_MODEL` | `u2net_human_seg` | Background-removal model |
+| `MAX_IMAGE_BYTES` | `5242880` | Max uploaded image size in bytes |
+
+---
+
+## Error Handling
+
+- **400 Bad Request**: Missing SVG/image, unsupported file type, or invalid image.
+- **413 Payload Too Large**: Image is larger than the configured limit.
+- **500 Internal Server Error**: Internal conversion or background-removal issue.
+
+## Privacy Note
+
+This API processes uploaded images in memory and returns the processed output. It does not intentionally store uploaded images.
