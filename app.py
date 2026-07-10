@@ -1,4 +1,5 @@
 from flask import Flask, request, send_file, jsonify
+from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import cairosvg
 from rembg import remove, new_session
@@ -7,6 +8,29 @@ from io import BytesIO
 import os
 
 app = Flask(__name__)
+
+CORS(app, resources={
+    r"/remove-bg-white": {
+        "origins": [
+            "https://sdfaheemuddin.github.io",
+            "http://localhost:8000",
+            "http://127.0.0.1:8000",
+            "http://localhost:5000",
+            "http://127.0.0.1:5000"
+        ],
+        "methods": ["POST", "OPTIONS"]
+    },
+    r"/convert": {
+        "origins": [
+            "https://sdfaheemuddin.github.io",
+            "http://localhost:8000",
+            "http://127.0.0.1:8000",
+            "http://localhost:5000",
+            "http://127.0.0.1:5000"
+        ],
+        "methods": ["GET", "POST", "OPTIONS"]
+    }
+})
 
 MAX_IMAGE_BYTES = int(os.environ.get("MAX_IMAGE_BYTES", 5 * 1024 * 1024))
 ALLOWED_IMAGE_MIMES = {"image/jpeg", "image/png", "image/webp"}
