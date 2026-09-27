@@ -1,7 +1,6 @@
 from flask import Flask, request, send_file, jsonify, g
 from werkzeug.utils import secure_filename
 import cairosvg
-from rembg import remove, new_session
 from PIL import Image, UnidentifiedImageError
 from io import BytesIO
 import json
@@ -24,8 +23,21 @@ logging.basicConfig(
 )
 logger = logging.getLogger("svgtopng")
 
-# Load once and reuse. This avoids reloading the model for every request.
-rembg_session = new_session(os.environ.get("REMBG_MODEL", "u2net_human_seg"))
+# Background removal is intentionally lazy-loaded. Loading rembg/ONNX and its
+# segmentation model during process startup can exceed Render free-tier memory.
+rembg_session = None
+
+
+def _get_rembg():
+    """Import rembg and initialize its model only when background removal is used."""
+    global rembg_session
+    from rembg import remove, new_session
+
+    if rembg_session is None:
+        logger.info("Loading rembg model on first /remove-bg-white request")
+        rembg_session = new_session(os.environ.get("REMBG_MODEL", "u2net_human_seg"))
+
+    return remove, rembg_session
 
 
 def _safe_request_source():
@@ -144,7 +156,8 @@ def remove_background_white():
         except (UnidentifiedImageError, OSError):
             return jsonify({"error": "Invalid image file."}), 400
 
-        transparent_bytes = remove(input_bytes, session=rembg_session)
+        remove, session = _get_rembg()
+        transparent_bytes = remove(input_bytes, session=session)
         transparent = Image.open(BytesIO(transparent_bytes)).convert("RGBA")
 
         white = Image.new("RGBA", transparent.size, "WHITE")
